@@ -463,12 +463,6 @@
               '';
               virtualHosts.${vhostName} = {
                 default = vhostName == "_";
-                listen = [
-                  {
-                    addr = "0.0.0.0";
-                    port = 80;
-                  }
-                ];
                 extraConfig = ''
                   add_header X-Cache-Status $upstream_cache_status;
                   client_body_buffer_size 256k;
