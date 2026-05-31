@@ -71,6 +71,7 @@ Files must be in a supported format because the original file is always served d
 
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Nix Flake](./docs/Flake.md)
 - [Local Development](#local-development)
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
