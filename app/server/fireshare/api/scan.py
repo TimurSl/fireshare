@@ -90,7 +90,7 @@ def folder_size():
 @demo_restrict
 def manual_scan():
     current_app.logger.info(f"Executed manual scan")
-    Popen(["fireshare", "bulk-import"], shell=False, start_new_session=True)
+    Popen(util.fireshare_cli_cmd("bulk-import"), shell=False, start_new_session=True)
     return Response(status=200)
 
 
@@ -99,7 +99,7 @@ def manual_scan():
 @demo_restrict
 def manual_scan_images():
     current_app.logger.info(f"Executed manual image scan")
-    Popen(["fireshare", "scan-images"], shell=False, start_new_session=True)
+    Popen(util.fireshare_cli_cmd("scan-images"), shell=False, start_new_session=True)
     return Response(status=200)
 
 

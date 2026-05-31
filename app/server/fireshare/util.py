@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import json
 import subprocess as sp
+import sys
 import xxhash
 from fireshare import logger
 import time
@@ -47,6 +48,11 @@ AV1_CODEC_NAMES = frozenset([
     'av1_nvenc',
     'av1_qsv',
 ])
+
+
+def fireshare_cli_cmd(*args):
+    """Run Fireshare CLI via current interpreter so PATH is irrelevant."""
+    return [sys.executable, "-m", "fireshare.cli", *args]
 
 def lock_exists(path: Path, filename: str = "fireshare.lock"):
     """

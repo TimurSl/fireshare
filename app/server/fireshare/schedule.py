@@ -1,17 +1,19 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from sqlalchemy.pool import StaticPool
-
 import logging
 from subprocess import Popen
+
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
+from sqlalchemy.pool import StaticPool
+
+from . import util
 
 logger = logging.getLogger('fireshare')
 logger.setLevel(logging.DEBUG)
 
 def fireshare_scan():
     logger.info('Starting scheduled scan...')
-    Popen(["fireshare", "bulk-import"], shell=False)
-    Popen(["fireshare", "scan-images"], shell=False)
+    Popen(util.fireshare_cli_cmd("bulk-import"), shell=False)
+    Popen(util.fireshare_cli_cmd("scan-images"), shell=False)
 
 def init_schedule(dburl, mins_between_scan=5):
     if mins_between_scan > 0:

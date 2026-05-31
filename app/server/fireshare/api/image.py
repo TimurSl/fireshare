@@ -29,7 +29,7 @@ def _launch_scan_image(save_path, config, game_id=None, tag_ids=None, title=None
     if not image_directory:
         return None
     rel_path = os.path.relpath(save_path, image_directory)
-    cmd = ["fireshare", "scan-image", f"--path={rel_path}"]
+    cmd = util.fireshare_cli_cmd("scan-image", f"--path={rel_path}")
     if game_id:
         cmd.append(f"--game-id={game_id}")
     if tag_ids:

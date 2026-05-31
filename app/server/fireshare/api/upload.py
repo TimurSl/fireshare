@@ -51,7 +51,7 @@ def _launch_scan_video(save_path, config, tag_ids=None, game_id=None, title=None
     data_path = paths['data']
     videos_path = paths['video']
     app = current_app._get_current_object()
-    cmd = ["fireshare", "scan-video", f"--path={save_path}"]
+    cmd = util.fireshare_cli_cmd("scan-video", f"--path={save_path}")
     if tag_ids:
         cmd.append(f"--tag-ids={','.join(str(t) for t in tag_ids)}")
     if game_id:
