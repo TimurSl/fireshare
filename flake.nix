@@ -345,7 +345,7 @@
               let
                 pythonEnv = pkgs.python313.withPackages (ps: [
                   package
-                  ps.flask
+                ] ++ package.propagatedBuildInputs ++ [
                   ps.gunicorn
                 ]);
               in
