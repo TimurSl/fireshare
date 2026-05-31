@@ -14,6 +14,7 @@ from sqlalchemy import func
 import time
 import requests
 import re
+from flask_migrate import upgrade as migrate_upgrade
 
 from .constants import SUPPORTED_FILE_EXTENSIONS
 
@@ -183,6 +184,14 @@ def init_db():
     with create_app().app_context():
         db.create_all()
         logger.info(f"Created database file at {current_app.config['SQLALCHEMY_DATABASE_URI']}")
+
+
+@cli.command()
+def upgrade_db():
+    migrations_directory = os.environ.get("FIRESHARE_MIGRATIONS_DIRECTORY", "/migrations")
+    with create_app().app_context():
+        migrate_upgrade(directory=migrations_directory)
+        logger.info(f"Upgraded database using migrations at {migrations_directory}")
 
 @cli.command()
 @click.option("--username", "-u", help="Username", required=True)

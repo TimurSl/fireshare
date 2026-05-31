@@ -363,6 +363,7 @@
                   VIDEO_DIRECTORY = toString cfg.videoDir;
                   IMAGE_DIRECTORY = toString cfg.imageDir;
                   TEMPLATE_PATH = "${package}/share/fireshare/templates";
+                  FIRESHARE_MIGRATIONS_DIRECTORY = "${package}/share/fireshare/migrations";
                   ENABLE_TRANSCODING = boolEnv cfg.enableTranscoding;
                   TRANSCODE_GPU = boolEnv cfg.transcodeGpu;
                   TRANSCODE_TIMEOUT = toString cfg.transcodeTimeout;
@@ -388,7 +389,7 @@
                       set -eu
                       ${pkgs.coreutils}/bin/rm -f ${toString cfg.dataDir}/*.lock ${toString cfg.dataDir}/jobs.sqlite
                     ''}"
-                    "${pythonEnv}/bin/python -m flask db --directory ${package}/share/fireshare/migrations upgrade"
+                    "${package}/bin/fireshare upgrade-db"
                     "${package}/bin/fireshare migrate-game-assets"
                     "${pkgs.writeShellScript "fireshare-boomerangs" ''
                       set -eu

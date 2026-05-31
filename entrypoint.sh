@@ -124,7 +124,7 @@ fi
 # ── Database ──────────────────────────────────────────────────────────────────
 section "Database"
 log "Running migrations"
-gosu appuser env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" flask db upgrade
+gosu appuser env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" fireshare upgrade-db
 log "Migrations complete"
 
 # ── Game assets ───────────────────────────────────────────────────────────────
