@@ -553,7 +553,7 @@
                     '';
                   };
 
-                  "~ ^/_content/derived/" = {
+                  "/_content/derived/" = {
                     root = cfg.processedDir;
                     extraConfig = ''
                       auth_request /internal/video-auth;
