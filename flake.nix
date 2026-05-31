@@ -347,15 +347,19 @@
               fireshare = { };
             };
 
-            users.users = lib.mkIf (cfg.user == "fireshare") {
-              fireshare = {
-                isSystemUser = true;
-                group = cfg.group;
-                home = cfg.dataDir;
-              };
-            };
-
-            users.users.${config.services.nginx.user}.extraGroups = lib.mkIf cfg.nginx.enable [ cfg.group ];
+            users.users =
+              (lib.optionalAttrs (cfg.user == "fireshare") {
+                fireshare = {
+                  isSystemUser = true;
+                  group = cfg.group;
+                  home = cfg.dataDir;
+                };
+              })
+              // (lib.optionalAttrs cfg.nginx.enable {
+                "${config.services.nginx.user}" = {
+                  extraGroups = [ cfg.group ];
+                };
+              });
 
             systemd.tmpfiles.rules = [
               "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.group} -"
