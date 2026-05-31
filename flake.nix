@@ -362,6 +362,7 @@
                   PROCESSED_DIRECTORY = toString cfg.processedDir;
                   VIDEO_DIRECTORY = toString cfg.videoDir;
                   IMAGE_DIRECTORY = toString cfg.imageDir;
+                  PYTHONPATH = "${package}/${pkgs.python313.sitePackages}";
                   TEMPLATE_PATH = "${package}/share/fireshare/templates";
                   FIRESHARE_MIGRATIONS_DIRECTORY = "${package}/share/fireshare/migrations";
                   ENABLE_TRANSCODING = boolEnv cfg.enableTranscoding;
