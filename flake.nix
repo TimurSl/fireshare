@@ -341,68 +341,72 @@
               "d ${cfg.dataDir}/game_assets 0750 ${cfg.user} ${cfg.group} -"
             ];
 
-            systemd.services.fireshare = {
-              description = "Fireshare media server";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network-online.target" ];
-              wants = [ "network-online.target" ];
+            systemd.services.fireshare =
+              let
+                pythonEnv = pkgs.python313.withPackages (ps: [ package ]);
+              in
+              {
+                description = "Fireshare media server";
+                wantedBy = [ "multi-user.target" ];
+                after = [ "network-online.target" ];
+                wants = [ "network-online.target" ];
 
-              environment = {
-                FLASK_APP = "fireshare:create_app()";
-                ENVIRONMENT = "production";
-                DATA_DIRECTORY = toString cfg.dataDir;
-                PROCESSED_DIRECTORY = toString cfg.processedDir;
-                VIDEO_DIRECTORY = toString cfg.videoDir;
-                IMAGE_DIRECTORY = toString cfg.imageDir;
-                TEMPLATE_PATH = "${package}/share/fireshare/templates";
-                ENABLE_TRANSCODING = boolEnv cfg.enableTranscoding;
-                TRANSCODE_GPU = boolEnv cfg.transcodeGpu;
-                TRANSCODE_TIMEOUT = toString cfg.transcodeTimeout;
-                MINUTES_BETWEEN_VIDEO_SCANS = toString cfg.minutesBetweenVideoScans;
-                THUMBNAIL_VIDEO_LOCATION = toString cfg.thumbnailVideoLocation;
-                GUNICORN_THREADS = toString cfg.gunicornThreads;
-                GUNICORN_WORKER_CAP = toString cfg.gunicornWorkerCap;
-              }
-              // lib.optionalAttrs (cfg.domain != null) { DOMAIN = cfg.domain; }
-              // lib.optionalAttrs (cfg.gunicornWorkers != null) { GUNICORN_WORKERS = toString cfg.gunicornWorkers; }
-              // cfg.environment;
+                environment = {
+                  FLASK_APP = "fireshare:create_app()";
+                  ENVIRONMENT = "production";
+                  DATA_DIRECTORY = toString cfg.dataDir;
+                  PROCESSED_DIRECTORY = toString cfg.processedDir;
+                  VIDEO_DIRECTORY = toString cfg.videoDir;
+                  IMAGE_DIRECTORY = toString cfg.imageDir;
+                  TEMPLATE_PATH = "${package}/share/fireshare/templates";
+                  ENABLE_TRANSCODING = boolEnv cfg.enableTranscoding;
+                  TRANSCODE_GPU = boolEnv cfg.transcodeGpu;
+                  TRANSCODE_TIMEOUT = toString cfg.transcodeTimeout;
+                  MINUTES_BETWEEN_VIDEO_SCANS = toString cfg.minutesBetweenVideoScans;
+                  THUMBNAIL_VIDEO_LOCATION = toString cfg.thumbnailVideoLocation;
+                  GUNICORN_THREADS = toString cfg.gunicornThreads;
+                  GUNICORN_WORKER_CAP = toString cfg.gunicornWorkerCap;
+                }
+                // lib.optionalAttrs (cfg.domain != null) { DOMAIN = cfg.domain; }
+                // lib.optionalAttrs (cfg.gunicornWorkers != null) { GUNICORN_WORKERS = toString cfg.gunicornWorkers; }
+                // cfg.environment;
 
-              serviceConfig = {
-                Type = "exec";
-                User = cfg.user;
-                Group = cfg.group;
-                EnvironmentFile = cfg.environmentFiles;
-                WorkingDirectory = package;
-                RuntimeDirectory = "fireshare";
-                RuntimeDirectoryMode = "0750";
-                ExecStartPre = [
-                  "${pkgs.writeShellScript "fireshare-cleanup" ''
-                    set -eu
-                    ${pkgs.coreutils}/bin/rm -f ${toString cfg.dataDir}/*.lock ${toString cfg.dataDir}/jobs.sqlite
-                  ''}"
-                  "${package}/bin/flask db --directory ${package}/share/fireshare/migrations upgrade"
-                  "${package}/bin/fireshare migrate-game-assets"
-                  "${pkgs.writeShellScript "fireshare-boomerangs" ''
-                    set -eu
-                    flag="${toString cfg.dataDir}/.boomerangs_generated"
-                    if [ ! -f "$flag" ]; then
-                      ${package}/bin/fireshare create-boomerang-posters || true
-                      ${pkgs.coreutils}/bin/touch "$flag"
-                    fi
-                  ''}"
+                serviceConfig = {
+                  Type = "exec";
+                  User = cfg.user;
+                  Group = cfg.group;
+                  EnvironmentFile = cfg.environmentFiles;
+                  WorkingDirectory = package;
+                  RuntimeDirectory = "fireshare";
+                  RuntimeDirectoryMode = "0750";
+                  ExecStartPre = [
+                    "${pkgs.writeShellScript "fireshare-cleanup" ''
+                      set -eu
+                      ${pkgs.coreutils}/bin/rm -f ${toString cfg.dataDir}/*.lock ${toString cfg.dataDir}/jobs.sqlite
+                    ''}"
+                    "${pythonEnv}/bin/flask db --directory ${package}/share/fireshare/migrations upgrade"
+                    "${pythonEnv}/bin/fireshare migrate-game-assets"
+                    "${pkgs.writeShellScript "fireshare-boomerangs" ''
+                      set -eu
+                      flag="${toString cfg.dataDir}/.boomerangs_generated"
+                      if [ ! -f "$flag" ]; then
+                        ${pythonEnv}/bin/fireshare create-boomerang-posters || true
+                        ${pkgs.coreutils}/bin/touch "$flag"
+                      fi
+                    ''}"
+                  ];
+                  ExecStart = "${pythonEnv}/bin/gunicorn --config ${package}/share/fireshare/gunicorn.conf.py --bind=${cfg.host}:${toString cfg.port} 'fireshare:create_app(init_schedule=True)'";
+                  Restart = "on-failure";
+                  RestartSec = "5s";
+                  KillSignal = "SIGINT";
+                  TimeoutStartSec = "30min";
+                };
+
+                path = [
+                  pythonEnv
+                  pkgs.ffmpeg
                 ];
-                ExecStart = "${package}/bin/gunicorn --config ${package}/share/fireshare/gunicorn.conf.py --bind=${cfg.host}:${toString cfg.port} 'fireshare:create_app(init_schedule=True)'";
-                Restart = "on-failure";
-                RestartSec = "5s";
-                KillSignal = "SIGINT";
-                TimeoutStartSec = "30min";
               };
-
-              path = [
-                package
-                pkgs.ffmpeg
-              ];
-            };
 
             services.nginx = lib.mkIf cfg.nginx.enable {
               enable = true;
