@@ -343,7 +343,11 @@
 
             systemd.services.fireshare =
               let
-                pythonEnv = pkgs.python313.withPackages (ps: [ package ]);
+                pythonEnv = pkgs.python313.withPackages (ps: [
+                  package
+                  ps.flask
+                  ps.gunicorn
+                ]);
               in
               {
                 description = "Fireshare media server";
@@ -384,18 +388,18 @@
                       set -eu
                       ${pkgs.coreutils}/bin/rm -f ${toString cfg.dataDir}/*.lock ${toString cfg.dataDir}/jobs.sqlite
                     ''}"
-                    "${pythonEnv}/bin/flask db --directory ${package}/share/fireshare/migrations upgrade"
-                    "${pythonEnv}/bin/fireshare migrate-game-assets"
+                    "${pythonEnv}/bin/python -m flask db --directory ${package}/share/fireshare/migrations upgrade"
+                    "${package}/bin/fireshare migrate-game-assets"
                     "${pkgs.writeShellScript "fireshare-boomerangs" ''
                       set -eu
                       flag="${toString cfg.dataDir}/.boomerangs_generated"
                       if [ ! -f "$flag" ]; then
-                        ${pythonEnv}/bin/fireshare create-boomerang-posters || true
+                        ${package}/bin/fireshare create-boomerang-posters || true
                         ${pkgs.coreutils}/bin/touch "$flag"
                       fi
                     ''}"
                   ];
-                  ExecStart = "${pythonEnv}/bin/gunicorn --config ${package}/share/fireshare/gunicorn.conf.py --bind=${cfg.host}:${toString cfg.port} 'fireshare:create_app(init_schedule=True)'";
+                  ExecStart = "${pythonEnv}/bin/python -m gunicorn --config ${package}/share/fireshare/gunicorn.conf.py --bind=${cfg.host}:${toString cfg.port} 'fireshare:create_app(init_schedule=True)'";
                   Restart = "on-failure";
                   RestartSec = "5s";
                   KillSignal = "SIGINT";
