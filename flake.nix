@@ -149,6 +149,31 @@
         let
           cfg = config.services.fireshare;
           package = cfg.package;
+          pythonPackages = pkgs.python313Packages;
+          fireshareRuntimeDeps = with pythonPackages; [
+            apscheduler
+            click
+            ffmpeg-python
+            flask
+            flask-cors
+            flask-login
+            flask-migrate
+            flask-sqlalchemy
+            flask-wtf
+            greenlet
+            itsdangerous
+            jinja2
+            markupsafe
+            pillow
+            python-ldap
+            rapidfuzz
+            requests
+            six
+            sqlalchemy
+            werkzeug
+            wtforms
+            xxhash
+          ];
           boolEnv = value: if value then "true" else "false";
           proxyHeaders = ''
             proxy_http_version 1.1;
@@ -343,10 +368,10 @@
 
             systemd.services.fireshare =
               let
-                pythonEnv = pkgs.python313.withPackages (ps: [
+                pythonEnv = pkgs.python313.withPackages (_: [
                   package
-                ] ++ package.propagatedBuildInputs ++ [
-                  ps.gunicorn
+                ] ++ fireshareRuntimeDeps ++ [
+                  pythonPackages.gunicorn
                 ]);
               in
               {
