@@ -355,6 +355,8 @@
               };
             };
 
+            users.users.${config.services.nginx.user}.extraGroups = lib.mkIf cfg.nginx.enable [ cfg.group ];
+
             systemd.tmpfiles.rules = [
               "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.group} -"
               "d ${cfg.processedDir} 0750 ${cfg.user} ${cfg.group} -"
