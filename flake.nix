@@ -495,14 +495,19 @@
                   error_page 504 /api-unavailable;
                 '';
                 locations = {
+                  "/assets/" = {
+                    root = "${package}/share/fireshare/client";
+                    extraConfig = ''
+                      add_header Cache-Control "public, max-age=31536000, immutable";
+                      try_files $uri =404;
+                    '';
+                  };
+
                   "/" = {
                     root = "${package}/share/fireshare/client";
                     index = "index.html";
                     extraConfig = ''
-                      proxy_cache FIRESHAREPROXYCACHE;
-                      proxy_cache_valid 200 302 60m;
-                      proxy_cache_valid 404 5m;
-                      add_header Cache-Control "public, max-age=3600";
+                      add_header Cache-Control "no-cache, must-revalidate";
                       try_files $uri $uri/ /index.html;
                     '';
                   };
